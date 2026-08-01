@@ -14,7 +14,8 @@
   --surface: #101a24;
   --surface-2: #16242f;
   --border: #2f4557;
-  --border-strong: #456175;
+  /* Load-bearing control boundary: >=3:1 against bg, surface and surface-2. */
+  --border-strong: #657d8f;
 
   --text: #e8f2f8;
   --text-dim: #a9bfcd;
@@ -41,7 +42,8 @@ html[data-theme='light'] {
   --surface: #ffffff;
   --surface-2: #e7eff5;
   --border: #b3c8d6;
-  --border-strong: #7e9bad;
+  /* Load-bearing control boundary: >=3:1 against bg, surface and surface-2. */
+  --border-strong: #718b9d;
 
   --text: #0d1a23;
   --text-dim: #45606f;
