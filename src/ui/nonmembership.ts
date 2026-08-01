@@ -30,6 +30,7 @@ import {
   refs,
   SOURCES,
   stat,
+  toySizeNote,
   verdict,
 } from './dom'
 import { DEFAULT_NON_MEMBER } from '../accumulator/params'
@@ -122,8 +123,8 @@ export function mountNonMembership(root: HTMLElement): void {
         'div',
         { class: 'statrow' },
         stat('a (reduced)', witness.a.toString(), 'ok'),
-        stat('d', `${width}-byte group element`, 'ok'),
-        stat('Proof size', `${nonMembershipProofBytes(state.params, witness)} bytes`, 'ok'),
+        stat('d', `${width}-byte group element`, 'ok', true),
+        stat('Proof size', `${nonMembershipProofBytes(state.params, witness)} bytes`, 'ok', true),
         stat('u withheld', `${bitLength(u)} bits never sent`),
       ),
       hexBlock(hexOf(witness.d, width), `Non-membership witness element d for ${label}`),
@@ -136,6 +137,7 @@ export function mountNonMembership(root: HTMLElement): void {
         class: 'note',
         text: 'Substitute A = g^u and d = g^b and the left-hand side is g^(a·u + b·x) = g¹. The verifier is checking Bezout without being able to see either coefficient’s effect on u.',
       }),
+      toySizeNote(),
     )
   }
 

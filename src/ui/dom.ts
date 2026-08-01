@@ -91,13 +91,45 @@ export function verdict(tone: Tone, label: string, detail?: string): HTMLElement
   )
 }
 
-/** A small labelled fact. Used everywhere for "u is 217 bits" style readouts. */
-export function stat(label: string, value: string, tone: Tone = 'idle'): HTMLElement {
+/**
+ * The toy-parameter marker.
+ *
+ * Every size this page reports is real, and every one of them is measured at
+ * parameters chosen for a browser tab rather than for security. A bare "72
+ * bytes" reads as a deployment claim, so any figure that would change at
+ * production parameters carries this badge and the sentence below it.
+ */
+export const TOY_SIZE_TITLE =
+  'Measured at this page’s toy parameters: a 512-bit modulus and 64-bit prime representatives. ' +
+  'Production parameters (3072-bit modulus, 256-bit representatives) make every group element 384 bytes.'
+
+export function toyTag(): HTMLElement {
+  return el('span', { class: 'tag-toy', title: TOY_SIZE_TITLE, text: 'TOY' })
+}
+
+/** The standard one-liner, so the caveat is worded identically everywhere. */
+export function toySizeNote(): HTMLElement {
+  return el(
+    'p',
+    { class: 'note' },
+    'Every size in this panel is measured at this page’s toy parameters — a 512-bit modulus and ' +
+      '64-bit prime representatives (marked ',
+    toyTag(),
+    '). At production parameters a group element is 384 bytes and a representative 32: the proofs ' +
+      'stay fixed-size, they are just bigger. The comparison panel switches between the two.',
+  )
+}
+
+/**
+ * A small labelled fact. Used everywhere for "u is 217 bits" style readouts.
+ * Pass `toy` for any value that would change at production parameters.
+ */
+export function stat(label: string, value: string, tone: Tone = 'idle', toy = false): HTMLElement {
   return el(
     'div',
     { class: `stat stat-${tone}` },
     el('span', { class: 'stat-label', text: label }),
-    el('span', { class: 'stat-value', text: value }),
+    el('span', { class: 'stat-value' }, value, toy ? ' ' : null, toy ? toyTag() : null),
   )
 }
 

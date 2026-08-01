@@ -193,16 +193,18 @@ npm run test:flow      # just the functional flow, for a faster loop
   path: reset must restore a byte-identical digest, and a held witness must stay valid against the
   digest it was minted for while failing against the current one. Collapsing those two into one
   answer is the operational mistake accumulators invite, so it is tested.
-- **13 browser tests** in `e2e/`, all run by `npm run test:a11y` and all gating the deploy:
+- **15 browser tests** in `e2e/`, all run by `npm run test:a11y` and all gating the deploy:
   - **3 axe scans** for zero WCAG 2.1 A/AA violations — dark, light, and a 390px viewport — each
     driven through both the healthy states (proofs verifying, forgeries rejected) and the failure
     states (stale witnesses, a revoked certificate, an accepted forgery), because an unscanned
     state is an ungated state.
-  - **10 functional tests** that protect the golden flow for its *meaning* rather than incidentally
+  - **12 functional tests** that protect the golden flow for its *meaning* rather than incidentally
     as axe setup: the four beats against the real verifier, replay determinism, the deep link,
     public witness repair, the attack reveal, the recommendation changing when no trusted setup is
-    available, and explicit layout assertions — first action on screen at 1440×900 and at 390×844,
-    and no horizontal overflow at 320, 390, 768 or 1440 px.
+    available, explicit layout assertions (first action on screen at 1440×900 and at 390×844, no
+    horizontal overflow at 320, 390, 768 or 1440 px), and a **size-honesty gate**: no readout that
+    would change at production parameters may ship without the `TOY` marker, and every panel that
+    reports a size must state what it would be in production.
 
   Screenshots are written to `test-results/shots/` as artefacts rather than compared against golden
   images: font rasterisation differs between a local macOS run and the Linux CI runner, and a

@@ -137,6 +137,41 @@ test.describe('deployment recommendation', () => {
   })
 })
 
+test.describe('size honesty', () => {
+  /**
+   * Item 6 of the review: a bare "72 bytes" reads as a deployment claim. Every
+   * size readout that would change at production parameters must carry the TOY
+   * marker. The comparison panel is exempt by design — there you *choose* the
+   * parameters, and its figures are labelled by the selectors themselves.
+   */
+  test('no size readout ships without a toy marker', async ({ page }) => {
+    await page.goto('.')
+    // Drive the panels that report sizes into their populated state.
+    await page.getByRole('button', { name: 'Build the revocation set' }).click()
+    await page.getByRole('button', { name: /^Prove cert:/ }).click()
+    await page.getByRole('button', { name: 'Build witness and verify' }).first().click()
+    await page.getByRole('button', { name: 'Build witness and verify' }).last().click()
+
+    const unmarked = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('.stat-value'))
+        .filter((v) => /byte/i.test(v.textContent ?? ''))
+        .filter((v) => !v.closest('#compare'))
+        .filter((v) => !v.querySelector('.tag-toy'))
+        .map((v) => `${v.previousElementSibling?.textContent ?? '?'} = ${v.textContent?.trim()}`),
+    )
+    expect(unmarked, 'size readouts missing the TOY marker').toEqual([])
+  })
+
+  test('every panel that reports a size explains what it would be in production', async ({ page }) => {
+    await page.goto('.')
+    for (const id of ['mechanism', 'membership', 'nonmembership', 'dynamics', 'revocation']) {
+      await expect(page.locator(`#${id}`), id).toContainText('384 bytes')
+    }
+    // And the marker itself is used widely enough to be recognisable.
+    expect(await page.locator('.tag-toy').count()).toBeGreaterThan(5)
+  })
+})
+
 test.describe('layout', () => {
   test('the first action is on screen without scrolling on desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })

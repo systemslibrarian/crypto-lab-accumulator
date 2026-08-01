@@ -12,7 +12,7 @@
 import { modPow, bitLength } from '../core/bigint'
 import { hashToPrime } from '../core/hashToPrime'
 import { accumulate, exponentProduct } from '../accumulator/accumulator'
-import { el, panel, button, clear, hexBlock, meter, stat, expert, liveRegion, refs, SOURCES } from './dom'
+import { el, panel, button, clear, hexBlock, meter, stat, expert, liveRegion, refs, SOURCES, toySizeNote } from './dom'
 import { state } from './state'
 
 export function mountMechanism(root: HTMLElement): void {
@@ -97,7 +97,7 @@ export function mountMechanism(root: HTMLElement): void {
         stat('Elements', primes.length.toLocaleString()),
         stat('Exponent u', `${bitLength(u).toLocaleString()} bits`, 'warn'),
         stat('Digest A', `${bitLength(A).toLocaleString()} bits`, 'ok'),
-        stat('Raw list', `${primes.length * 8} bytes`, 'warn'),
+        stat('Raw list', `${primes.length * 8} bytes`, 'warn', true),
         stat('Computed in', `${ms.toFixed(0)} ms`),
       )
       scaleOut.appendChild(row)
@@ -184,6 +184,7 @@ export function mountMechanism(root: HTMLElement): void {
         text: `Capped by the modulus at ${state.params.bits} bits — ${state.modulusBytes} bytes — forever. This is the only value that gets published.`,
       }),
       hexBlock(A.toString(16).padStart(state.modulusBytes * 2, '0'), 'Digest A in hex', 'hexblock-tall'),
+      toySizeNote(),
     )
     readout.append(left, right)
 

@@ -302,7 +302,7 @@ export function mountTour(root: HTMLElement): void {
       el(
         'div',
         { class: 'statrow' },
-        stat('Size', `${bytes} bytes`),
+        stat('Size', `${bytes} bytes`, 'idle', true),
         stat('Minted against', `digest #${held.version}`),
         stat('Live digest', `#${state.version}`, behind > 0 ? 'warn' : 'idle'),
       ),

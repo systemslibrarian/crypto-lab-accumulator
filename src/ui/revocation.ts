@@ -15,7 +15,7 @@ import {
   verifyNonMembership,
 } from '../accumulator/accumulator'
 import type { NonMembershipWitness } from '../accumulator/types'
-import { el, panel, button, clear, expert, hexBlock, hexOf, liveRegion, meter, stat, verdict } from './dom'
+import { el, panel, button, clear, expert, hexBlock, hexOf, liveRegion, meter, stat, toySizeNote, verdict } from './dom'
 import { state } from './state'
 
 /** A plausible real-world revocation population and DER entry size. */
@@ -91,6 +91,7 @@ export function mountRevocation(root: HTMLElement): void {
         'server can staple to its own handshake, so nobody learns anything and nothing has to ',
         'be up.',
       ),
+      toySizeNote(),
     )
   }
 

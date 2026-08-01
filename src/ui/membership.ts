@@ -29,6 +29,7 @@ import {
   expert,
   refs,
   SOURCES,
+  toySizeNote,
 } from './dom'
 import { state } from './state'
 
@@ -77,7 +78,7 @@ export function mountMembership(root: HTMLElement): void {
         stat('Element', label),
         stat('Prime e', rep.prime.toString()),
         stat('Cofactor u/e', `${bitLength(u / rep.prime)} bits`),
-        stat('Witness size', `${membershipProofBytes(state.params, witness)} bytes`, 'ok'),
+        stat('Witness size', `${membershipProofBytes(state.params, witness)} bytes`, 'ok', true),
         stat('Verify cost', '1 modular exponentiation'),
       ),
       el('h3', { text: 'The witness  w = g^(u/e) mod N' }),
@@ -91,6 +92,7 @@ export function mountMembership(root: HTMLElement): void {
         class: 'note',
         text: `The verifier used only the published digest, the element label, and ${membershipProofBytes(state.params, witness)} bytes of witness. It never saw the set, and it never saw u (${bitLength(u)} bits of it).`,
       }),
+      toySizeNote(),
     )
   }
 

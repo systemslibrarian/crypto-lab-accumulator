@@ -33,6 +33,7 @@ import {
   refs,
   SOURCES,
   stat,
+  toySizeNote,
   verdict,
 } from './dom'
 import { state } from './state'
@@ -232,7 +233,7 @@ export function mountDynamics(root: HTMLElement): void {
         'div',
         { class: 'statrow' },
         stat('Elements', String(state.labels.length)),
-        stat('Digest size', `${width} bytes`, 'ok'),
+        stat('Digest size', `${width} bytes`, 'ok', true),
         stat('Exponent u', `${bitLength(exponentProduct(state.primes))} bits`, 'warn'),
         stat('Set version', `#${state.version}`),
       ),
@@ -250,6 +251,7 @@ export function mountDynamics(root: HTMLElement): void {
             text: `${change.kind === 'add' ? 'Added' : 'Removed'} ${change.label}. Marked digits changed; the length did not.`,
           })
         : el('p', { class: 'note', text: 'Add or remove something to see the digest move.' }),
+      toySizeNote(),
     )
 
     clear(heldOut)
