@@ -32,34 +32,48 @@ unsimplified; the parameters are a toy and the trapdoor is printed on the page o
 
 ## Exhibits
 
+**Start with the guided demo.** It is four beats, about ninety seconds, and it drives the same
+shared state and the same accumulator functions every panel below uses — there is no parallel
+simulation. Beats are re-entered by replay rather than undo, so Back, Restart and the
+`?tour=revocation&step=N` deep link are all one deterministic code path.
+
+0. **Guided demo** — build a revocation set and watch the digest change without growing; fetch and
+   verify a proof that a certificate is *not* revoked; revoke it and watch the cached proof turn
+   stale; then forge one with the trapdoor and watch the same verifier accept it. A persistent
+   set → digest → proof stage carries the state throughout, with each proof stamped with the digest
+   version it was minted against.
+
+Then the full lab, reachable from the sticky exhibit navigator (every section keeps a plain `#id`
+anchor, so any of them can be linked from a class or a slide):
+
 1. **What is an accumulator?** — a plain-language on-ramp with no maths, plus a glossary of every
    term the page later uses.
-2. **The exponent grows. The digest does not.** — the headline mechanism, stepped one real modular
+2. **The point: revocation without the list** — the byte costs of a full CRL, an OCSP response and
+   a witness, side by side, and the full fetch → revoke → reject cycle.
+3. **The exponent grows. The digest does not.** — the headline mechanism, stepped one real modular
    exponentiation at a time, with two meters diverging: the product of the primes climbing without
    bound while the digest stays pinned at 64 bytes. A scale test accumulates up to 1,000 extra
    elements for real and reports the measured sizes.
-3. **Membership proof** — build `w = g^(u/e)`, then compute `w^e mod N` and compare it against the
+4. **Membership proof** — build `w = g^(u/e)`, then compute `w^e mod N` and compare it against the
    digest hex digit by hex digit. Includes the fail-closed case: asking for a witness for a
    non-member, and seeing that `u/e` is simply not an integer.
-4. **Non-membership proof** — the Bézout identity shown as an identity (the actual `a` and `b`),
+5. **Non-membership proof** — the Bézout identity shown as an identity (the actual `a` and `b`),
    then reduced and hidden in the exponent, then verified. Ask about an element that *is* in the
    set and watch the proof become impossible rather than merely fail.
-5. **A living set — and the witnesses that go stale** — add and revoke elements; the digest changes
-   without changing size. Two witnesses are held on your behalf, go stale on every change, and are
-   repaired by the published update rules using public data only. Deletion is run both ways —
-   recompute over the set, and the one-exponentiation trapdoor shortcut — and the results compared.
-6. **Revocation without the list** — the use case, with the byte costs of a full CRL, an OCSP
-   response and a witness side by side. Fetch a proof that a certificate is not revoked, revoke it,
-   and watch the cached proof stop verifying.
-7. **Forge a proof** — ten attacks against the same verifier the honest panels use. Eight fail on
-   the arithmetic. One succeeds because the element map was bypassed. One succeeds because the
-   trapdoor exists, and cannot be made to fail.
-8. **Accumulator vs Merkle tree** — a measured table for the live set against a real RFC 6962
-   sorted-leaf tree with real inclusion and absence proofs, plus a scaling chart with the crossover
-   points marked at both toy and realistic parameters.
+6. **A living set — and the witnesses that go stale** — two witnesses are held on your behalf, go
+   stale on every change, and are repaired by the published update rules using public data only.
+   Deletion is run both ways — recompute over the set, and the one-exponentiation trapdoor
+   shortcut — and the results compared.
+7. **Accumulator vs Merkle tree** — describe your deployment (modulus, representative size, set
+   size, whether a trusted setup is available, how many witness holders and how much churn) and get
+   a plain recommendation, backed by a measured table against a real RFC 6962 sorted-leaf tree and
+   a scaling chart with the crossover points marked.
+8. **Forge a proof** — predict which of ten attacks the verifier will accept, *then* reveal. Eight
+   fail on the arithmetic. One succeeds because the element map was bypassed. One succeeds because
+   the trapdoor exists, and cannot be made to fail.
 9. **The parameters — and who holds the keys to them** — the modulus, generator and both safe
    primes, plus a real in-browser safe-prime search with a live candidate counter.
-10. **What is real here, and what is not** — the honest-scoping panel.
+10. **What is real here, and what is not** — the honest-scoping panel, with sources.
 
 ## When to Use It
 
@@ -84,10 +98,18 @@ systems proving a credential is not revoked.
 
 **<https://systemslibrarian.github.io/crypto-lab-accumulator/>**
 
-You can step the accumulation one exponentiation at a time, build and verify both kinds of witness,
-add and revoke certificates and watch cached proofs go stale and be repaired, run ten forgery
-attempts against the real verifier, compare measured proof sizes against a real Merkle tree, and
-generate a fresh modulus by searching for safe primes in your own browser.
+The guided demo is the first thing on the page and the first control is on screen without
+scrolling, on desktop and on a 390px phone. Jump straight to any beat with
+`?tour=revocation&step=3`, or to any exhibit with its anchor (`#compare`, `#forge`, …). A
+persistent **Reset demo** control in the navigator restores the deterministic starting set,
+parameters and digest from anywhere on the page, so the story can be rehearsed and repeated
+without hunting for the set editor.
+
+Beyond the tour you can step the accumulation one exponentiation at a time, build and verify both
+kinds of witness, watch cached proofs go stale and repair them, predict and then run ten forgery
+attempts against the real verifier, get a deployment recommendation from measured proof sizes and
+witness-update bandwidth, and generate a fresh modulus by searching for safe primes in your own
+browser.
 
 ## What Can Go Wrong
 
@@ -140,7 +162,8 @@ Other scripts:
 npm test               # unit tests + known-answer tests
 npm run build          # typecheck, then production build into dist/
 npm run preview        # serve the production build on port 4295
-npm run test:a11y      # axe WCAG 2.1 A/AA gate against the production build
+npm run test:a11y      # full browser gate: axe WCAG 2.1 A/AA + the functional flow
+npm run test:flow      # just the functional flow, for a faster loop
 ```
 
 ## Related Demos
@@ -152,7 +175,7 @@ npm run test:a11y      # axe WCAG 2.1 A/AA gate against the production build
 
 ## Build & Verify
 
-- **101 unit tests** across 7 files, all colocated in `src/` as `*.test.ts`.
+- **116 unit tests** across 8 files, all colocated in `src/` as `*.test.ts`.
 - **53 known-answer vectors** in `src/fixtures/kat.json`, covering SHA-256 (FIPS 180-4 published
   digests), modular exponentiation, extended Euclid, hash-to-prime, and a full end-to-end
   accumulator instance with its membership and non-membership witnesses.
@@ -166,10 +189,25 @@ npm run test:a11y      # axe WCAG 2.1 A/AA gate against the production build
   panel offers — including the two that succeed, which are asserted to succeed.
 - **A 12-step random churn test** carries one membership and one non-membership witness through
   interleaved adds and deletes, re-verifying both after every single step.
-- **Accessibility gate:** `@axe-core/playwright` scans the production build for zero WCAG 2.1 A/AA
-  violations in **both** themes, with a demo-specific driver that walks every panel into its
-  post-interaction state and scans twice per theme — once with the healthy results on screen and
-  once with the failure results. The GitHub Pages deploy is blocked if it fails.
+- **Replay-determinism and digest-history tests** in `src/ui/state.test.ts` protect the guided
+  path: reset must restore a byte-identical digest, and a held witness must stay valid against the
+  digest it was minted for while failing against the current one. Collapsing those two into one
+  answer is the operational mistake accumulators invite, so it is tested.
+- **13 browser tests** in `e2e/`, all run by `npm run test:a11y` and all gating the deploy:
+  - **3 axe scans** for zero WCAG 2.1 A/AA violations — dark, light, and a 390px viewport — each
+    driven through both the healthy states (proofs verifying, forgeries rejected) and the failure
+    states (stale witnesses, a revoked certificate, an accepted forgery), because an unscanned
+    state is an ungated state.
+  - **10 functional tests** that protect the golden flow for its *meaning* rather than incidentally
+    as axe setup: the four beats against the real verifier, replay determinism, the deep link,
+    public witness repair, the attack reveal, the recommendation changing when no trusted setup is
+    available, and explicit layout assertions — first action on screen at 1440×900 and at 390×844,
+    and no horizontal overflow at 320, 390, 768 or 1440 px.
+
+  Screenshots are written to `test-results/shots/` as artefacts rather than compared against golden
+  images: font rasterisation differs between a local macOS run and the Linux CI runner, and a
+  pixel-diff gate that cries wolf every commit is worse than none. The layout assertions above are
+  the part that must hold.
 
 ```bash
 npm test && npm run build && npm run test:a11y

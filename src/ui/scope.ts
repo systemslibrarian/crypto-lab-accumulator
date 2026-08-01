@@ -3,7 +3,7 @@
  * prove, and what it deliberately does not build.
  */
 
-import { el, panel, expert } from './dom'
+import { el, panel, expert, refs, SOURCES } from './dom'
 
 export function mountScope(root: HTMLElement): void {
   const p = panel('scope', 'What is real here, and what is not')
@@ -58,6 +58,21 @@ export function mountScope(root: HTMLElement): void {
         'Batched updates and batched proofs (Boneh–Bünz–Fisch 2019), which make witness maintenance and multi-element proofs practical at scale, and are what make accumulators interesting for stateless blockchain clients.',
         'Zero-knowledge accumulator proofs — proving membership without revealing which element, the form used in anonymous credential revocation.',
         'Any real key or certificate parsing. The "certificates" here are strings.',
+      ]),
+    ),
+  )
+
+  p.appendChild(
+    expert(
+      'Every construction on this page, with sources',
+      refs([
+        SOURCES.benaloh,
+        SOURCES.baric,
+        SOURCES.camenisch,
+        SOURCES.li,
+        SOURCES.bbf,
+        SOURCES.rfc6962,
+        SOURCES.fips180,
       ]),
     ),
   )

@@ -227,3 +227,79 @@ export function hexDiff(a: string, b: string, labelA: string, labelB: string): H
   )
   return wrap
 }
+
+export interface Reference {
+  authors: string
+  title: string
+  venue: string
+  /** A link we are actually confident resolves. */
+  href?: string
+}
+
+/**
+ * Sources at the point of use. A reviewer should be able to check which
+ * construction a panel is demonstrating without leaving the page.
+ *
+ * Where a stable primary link exists (an RFC, an IACR eprint, a NIST DOI) it is
+ * given directly. For the LNCS conference papers we link a DBLP title search
+ * rather than invent a DOI suffix — a wrong identifier would be worse than an
+ * extra click.
+ */
+export function refs(items: Reference[]): HTMLElement {
+  const ul = el('ul', { class: 'refs' })
+  for (const item of items) {
+    const href = item.href ?? `https://dblp.org/search?q=${encodeURIComponent(item.title)}`
+    ul.appendChild(
+      el(
+        'li',
+        {},
+        `${item.authors}, `,
+        el('cite', { text: item.title }),
+        `. ${item.venue}. `,
+        el('a', { href, target: '_blank', rel: 'noopener', text: item.href ? 'Read it' : 'Find it (DBLP)' }),
+      ),
+    )
+  }
+  return ul
+}
+
+export const SOURCES = {
+  benaloh: {
+    authors: 'J. Benaloh and M. de Mare',
+    title: 'One-Way Accumulators: A Decentralized Alternative to Digital Signatures',
+    venue: 'EUROCRYPT 1993',
+  },
+  baric: {
+    authors: 'N. Baric and B. Pfitzmann',
+    title: 'Collision-Free Accumulators and Fail-Stop Signature Schemes Without Trees',
+    venue: 'EUROCRYPT 1997',
+  },
+  camenisch: {
+    authors: 'J. Camenisch and A. Lysyanskaya',
+    title: 'Dynamic Accumulators and Application to Efficient Revocation of Anonymous Credentials',
+    venue: 'CRYPTO 2002',
+  },
+  li: {
+    authors: 'J. Li, N. Li and R. Xue',
+    title: 'Universal Accumulators with Efficient Nonmembership Proofs',
+    venue: 'ACNS 2007',
+  },
+  bbf: {
+    authors: 'D. Boneh, B. Bunz and B. Fisch',
+    title: 'Batching Techniques for Accumulators with Applications to IOPs and Stateless Blockchains',
+    venue: 'CRYPTO 2019',
+    href: 'https://eprint.iacr.org/2018/1188',
+  },
+  rfc6962: {
+    authors: 'B. Laurie, A. Langley and E. Kasper',
+    title: 'Certificate Transparency',
+    venue: 'RFC 6962',
+    href: 'https://www.rfc-editor.org/rfc/rfc6962',
+  },
+  fips180: {
+    authors: 'NIST',
+    title: 'Secure Hash Standard (SHS)',
+    venue: 'FIPS 180-4',
+    href: 'https://doi.org/10.6028/NIST.FIPS.180-4',
+  },
+} as const satisfies Record<string, Reference>

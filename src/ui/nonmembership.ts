@@ -27,6 +27,8 @@ import {
   hexOf,
   labelledInput,
   liveRegion,
+  refs,
+  SOURCES,
   stat,
   verdict,
 } from './dom'
@@ -161,6 +163,7 @@ export function mountNonMembership(root: HTMLElement): void {
         ' (ACNS 2007), building on the dynamic accumulator of Camenisch and Lysyanskaya ',
         '(CRYPTO 2002). The membership side goes back to Benaloh and de Mare (EUROCRYPT 1993).',
       ),
+      refs([SOURCES.li, SOURCES.camenisch, SOURCES.benaloh]),
     ),
   )
   root.appendChild(p)

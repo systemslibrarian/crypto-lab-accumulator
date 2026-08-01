@@ -29,6 +29,8 @@ import {
   labelledInput,
   labelledSelect,
   liveRegion,
+  refs,
+  SOURCES,
   stat,
   verdict,
 } from './dom'
@@ -39,6 +41,13 @@ interface Attack {
   name: string
   /** What the attacker is claiming. */
   claim: string
+  /**
+   * Why this attempt ends the way it does — the grouping the reveal teaches:
+   * `maths` is stopped by the arithmetic, `contract` slips past because the
+   * input contract (hash-to-prime) was bypassed, `assumption` succeeds because
+   * the security assumption itself is gone.
+   */
+  reason: 'maths' | 'contract' | 'assumption'
   run: (target: string, custom: string) => AttackResult
 }
 
@@ -65,30 +74,35 @@ export function mountForge(root: HTMLElement): void {
   const attacks: Attack[] = [
     {
       id: 'w-eq-a',
+      reason: 'maths',
       name: 'Claim membership with w = A (the obvious guess)',
       claim: 'the digest itself is my witness',
       run: (target) => memAttack(target, state.A, 'the digest A, used as a witness'),
     },
     {
       id: 'w-eq-g',
+      reason: 'maths',
       name: 'Claim membership with w = g',
       claim: 'the generator is my witness',
       run: (target) => memAttack(target, state.params.g, 'the generator g'),
     },
     {
       id: 'w-eq-1',
+      reason: 'maths',
       name: 'Claim membership with w = 1',
       claim: 'the identity element is my witness',
       run: (target) => memAttack(target, 1n, 'the identity, 1'),
     },
     {
       id: 'w-random',
+      reason: 'maths',
       name: 'Claim membership with a random group element',
       claim: 'this random 512-bit number is my witness',
       run: (target) => memAttack(target, randBelow(state.params.N), 'a fresh random element'),
     },
     {
       id: 'w-custom',
+      reason: 'maths',
       name: 'Claim membership with a witness you type',
       claim: 'this specific number is my witness',
       run: (target, custom) => {
@@ -103,6 +117,7 @@ export function mountForge(root: HTMLElement): void {
     },
     {
       id: 'w-steal',
+      reason: 'maths',
       name: 'Reuse a real member’s witness for someone else',
       claim: 'a witness is a witness',
       run: (target) => {
@@ -114,6 +129,7 @@ export function mountForge(root: HTMLElement): void {
     },
     {
       id: 'w-perturb',
+      reason: 'maths',
       name: 'Take a real witness and change one bit',
       claim: 'close enough',
       run: (target) => {
@@ -125,6 +141,7 @@ export function mountForge(root: HTMLElement): void {
     },
     {
       id: 'nm-random',
+      reason: 'maths',
       name: 'Prove a real member is absent with a random (a, d)',
       claim: 'I am not on the revocation list',
       run: () => {
@@ -151,6 +168,7 @@ export function mountForge(root: HTMLElement): void {
     },
     {
       id: 'composite',
+      reason: 'contract',
       name: 'Use a COMPOSITE representative instead of a prime',
       claim: 'my "element" is e₁·e₂ for two real members',
       run: () => {
@@ -178,6 +196,7 @@ export function mountForge(root: HTMLElement): void {
     },
     {
       id: 'trapdoor',
+      reason: 'assumption',
       name: 'Forge with the trapdoor (the factorisation of N)',
       claim: 'I am the setup authority and I kept p and q',
       run: (target) => {
@@ -304,13 +323,136 @@ export function mountForge(root: HTMLElement): void {
 
   attackSelect.addEventListener('change', run)
 
+  /**
+   * The prediction challenge. A list of ten outcomes is a fact sheet; asking
+   * the learner to commit to an answer first turns it into a test of their
+   * model, and the two surprises land far harder.
+   */
+  const predictions = new Map<string, 'accept' | 'reject'>()
+  let revealed = false
+
   function renderScoreboard(): void {
     clear(scoreboard)
-    scoreboard.append(
-      stat('Attacks available', String(attacks.length)),
-      stat('Blocked by the maths', '8', 'ok'),
-      stat('Blocked by the element map', '1', 'warn'),
-      stat('Blocked by nothing', '1', 'alarm'),
+
+    const table = el('table', { class: 'datatable' })
+    table.appendChild(
+      el(
+        'thead',
+        {},
+        el(
+          'tr',
+          {},
+          el('th', { scope: 'col', text: 'Attempt' }),
+          el('th', { scope: 'col', text: 'Your call' }),
+          el('th', { scope: 'col', text: revealed ? 'The verifier' : '—' }),
+        ),
+      ),
+    )
+    const tbody = el('tbody', {})
+    let correct = 0
+    for (const attack of attacks) {
+      const guess = predictions.get(attack.id) ?? 'reject'
+      const row = el('tr', {})
+      row.appendChild(el('th', { scope: 'row', text: attack.name }))
+
+      const cell = el('td', {})
+      const sel = el('select', { 'aria-label': `Your prediction for: ${attack.name}` })
+      for (const [value, text] of [
+        ['reject', 'Rejected'],
+        ['accept', 'Accepted'],
+      ] as const) {
+        sel.appendChild(el('option', { value, text, selected: guess === value }))
+      }
+      sel.value = guess
+      sel.disabled = revealed
+      sel.addEventListener('change', () => {
+        predictions.set(attack.id, sel.value as 'accept' | 'reject')
+      })
+      cell.appendChild(sel)
+      row.appendChild(cell)
+
+      const outcome = el('td', {})
+      if (revealed) {
+        const accepted = outcomeOf(attack)
+        const right = (accepted ? 'accept' : 'reject') === guess
+        if (right) correct++
+        add(
+          outcome,
+          el('span', {
+            class: `predict-verdict ${right ? 'predict-right' : 'predict-wrong'}`,
+            text: accepted ? 'ACCEPTED' : 'REJECTED',
+          }),
+          el('span', { text: right ? '  ✓ you called it' : '  ✗ you missed this one' }),
+        )
+      } else {
+        outcome.textContent = 'hidden'
+      }
+      row.appendChild(outcome)
+      tbody.appendChild(row)
+    }
+    table.appendChild(tbody)
+
+    add(
+      scoreboard,
+      el('p', {
+        class: 'note',
+        text: revealed
+          ? `You called ${correct} of ${attacks.length}. Every one of these was run against the same verifier the honest panels use.`
+          : 'Before you look: which of these will the real verifier accept? Commit to an answer, then reveal.',
+      }),
+      el('div', { class: 'tablewrap', tabindex: '0', role: 'group', 'aria-label': 'Prediction challenge' }, table),
+      el(
+        'div',
+        { class: 'controls' },
+        button(
+          revealed ? 'Hide the answers and try again' : 'Run all ten and reveal',
+          () => {
+            revealed = !revealed
+            renderScoreboard()
+          },
+        ),
+      ),
+      revealed ? revealSummary() : null,
+    )
+  }
+
+  /** Run an attack purely for its accept/reject bit. */
+  function outcomeOf(attack: Attack): boolean {
+    try {
+      return attack.run(targetInput.value.trim() || 'cert:SN-0xD4A9', customInput.value).accepted
+    } catch {
+      return false
+    }
+  }
+
+  function revealSummary(): HTMLElement {
+    const byReason = (r: Attack['reason']): number => attacks.filter((a) => a.reason === r).length
+    return el(
+      'div',
+      { class: 'subpanel' },
+      el('h3', { text: 'Three different reasons, not one' }),
+      el(
+        'ul',
+        { class: 'rules' },
+        el(
+          'li',
+          {},
+          el('strong', { text: `${byReason('maths')} rejected — wrong arithmetic. ` }),
+          'These fail on the Strong RSA assumption and would still fail at 3072 bits. The verifier is asking for an e-th root and there is exactly one.',
+        ),
+        el(
+          'li',
+          {},
+          el('strong', { text: `${byReason('contract')} accepted — the input contract was bypassed. ` }),
+          'A composite representative satisfies w^e = A even though nothing was added. Nothing the verifier can check stops this; hash-to-prime is the defence, and it lives before the verifier.',
+        ),
+        el(
+          'li',
+          {},
+          el('strong', { text: `${byReason('assumption')} accepted — the assumption is gone. ` }),
+          'With p and q the group order is known, so e-th roots are free. No implementation choice repairs this. It is an argument about how the parameters were generated, not about code.',
+        ),
+      ),
     )
   }
 
@@ -342,6 +484,7 @@ export function mountForge(root: HTMLElement): void {
         class: 'note',
         text: 'Every attack on this list has a corresponding unit test in src/accumulator/adversarial.test.ts, including the two that succeed.',
       }),
+      refs([SOURCES.baric, SOURCES.bbf]),
     ),
   )
 

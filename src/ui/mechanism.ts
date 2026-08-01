@@ -12,7 +12,7 @@
 import { modPow, bitLength } from '../core/bigint'
 import { hashToPrime } from '../core/hashToPrime'
 import { accumulate, exponentProduct } from '../accumulator/accumulator'
-import { el, panel, button, clear, hexBlock, meter, stat, expert, liveRegion } from './dom'
+import { el, panel, button, clear, hexBlock, meter, stat, expert, liveRegion, refs, SOURCES } from './dom'
 import { state } from './state'
 
 export function mountMechanism(root: HTMLElement): void {
@@ -226,6 +226,7 @@ export function mountMechanism(root: HTMLElement): void {
         'function; this needs an RSA modulus whose factorisation nobody knows. That trade is ',
         'measured in the comparison panel and attacked in the forgery panel.',
       ),
+      refs([SOURCES.benaloh]),
     ),
     scaleBox,
   )

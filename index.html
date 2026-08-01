@@ -157,21 +157,21 @@
           <h1 class="cl-hero-title">Accumulator</h1>
           <p class="cl-hero-sub">RSA accumulator · dynamic membership · non-membership proofs</p>
           <p class="cl-hero-desc">
-            Builds a real RSA accumulator in the page — one 512-bit digest over a growing set — then
-            produces, verifies, updates and attacks both kinds of witness, and measures the whole
-            thing against a real sorted Merkle tree.
+            Prove a certificate is <em>not</em> on a revocation list — in one fixed-size witness,
+            against real RSA accumulator arithmetic.
           </p>
         </div>
         <aside class="cl-hero-why" aria-label="Why it matters">
           <span class="cl-hero-why-label">WHY IT MATTERS</span>
           <p class="cl-hero-why-text">
-            Your browser needs to know that one certificate was <em>not</em> revoked — a question
-            hash trees answer badly and revocation lists answer by making you download megabytes.
-            An accumulator answers it in a few dozen bytes, and the cost is a trusted setup you can
-            watch being violated here.
+            Your browser needs one answer about one certificate, and a revocation list makes it
+            download all of them. An accumulator replies with one fixed-size witness — 72 bytes at
+            this page's toy parameters, a few hundred in production.
           </p>
         </aside>
       </header>
+      <div id="tourhost"></div>
+      <div id="labnav"></div>
       <main id="exhibits"></main>
     </div>
     <footer class="scripture-footer">

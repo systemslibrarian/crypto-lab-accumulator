@@ -8,7 +8,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:a11y": "playwright test"
+    "test:a11y": "playwright test",
+    "test:flow": "playwright test e2e/flow.spec.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",

@@ -55,12 +55,32 @@ export class LabState {
   heldNonMembership: HeldNonMembership | null = null
   /** The last mutation, so panels can offer exactly the right repair. */
   lastChange: { kind: 'add' | 'delete'; label: string; previousA: bigint } | null = null
+  /**
+   * Every digest this lab has published, by version.
+   *
+   * Kept because "is this proof valid?" and "is this digest current?" are two
+   * different questions, and conflating them is the operational mistake
+   * accumulators invite. With the history we can verify a witness against the
+   * digest it was minted for AND against the live one, and say both out loud.
+   */
+  private history = new Map<number, bigint>()
 
   private listeners = new Set<Listener>()
 
   constructor() {
     this.A = accumulate(this.params, this.primes)
+    this.history.set(this.version, this.A)
     this.mintHeldWitnesses(this.labels[0] ?? null, DEFAULT_NON_MEMBER)
+  }
+
+  /** The digest as it stood at `version`, or null if that far back is gone. */
+  digestAt(version: number): bigint | null {
+    return this.history.get(version) ?? null
+  }
+
+  /** How many published digests ago a version is. */
+  versionsBehind(version: number): number {
+    return Math.max(0, this.version - version)
   }
 
   get primes(): bigint[] {
@@ -101,7 +121,7 @@ export class LabState {
     const previousA = this.A
     this.A = addElement(this.params, this.A, e)
     this.labels = [...this.labels, trimmed]
-    this.version++
+    this.bumpVersion()
     this.lastChange = { kind: 'add', label: trimmed, previousA }
     this.notify()
   }
@@ -111,7 +131,7 @@ export class LabState {
     const previousA = this.A
     this.labels = this.labels.filter((l) => l !== label)
     this.A = deleteByRecompute(this.params, this.primes)
-    this.version++
+    this.bumpVersion()
     this.lastChange = { kind: 'delete', label, previousA }
     this.notify()
   }
@@ -119,7 +139,9 @@ export class LabState {
   reset(): void {
     this.labels = [...DEFAULT_SET]
     this.A = accumulate(this.params, this.primes)
-    this.version++
+    this.history.clear()
+    this.version = 0
+    this.history.set(0, this.A)
     this.lastChange = null
     this.mintHeldWitnesses(this.labels[0] ?? null, DEFAULT_NON_MEMBER)
     this.notify()
@@ -128,10 +150,17 @@ export class LabState {
   useParams(params: AccumulatorParams): void {
     this.params = params
     this.A = accumulate(params, this.primes)
-    this.version++
+    this.history.clear()
+    this.version = 0
+    this.history.set(0, this.A)
     this.lastChange = null
     this.mintHeldWitnesses(this.heldMembership?.label ?? this.labels[0] ?? null, this.heldNonMembership?.label ?? DEFAULT_NON_MEMBER)
     this.notify()
+  }
+
+  private bumpVersion(): void {
+    this.version++
+    this.history.set(this.version, this.A)
   }
 
   // -- held witnesses -------------------------------------------------------

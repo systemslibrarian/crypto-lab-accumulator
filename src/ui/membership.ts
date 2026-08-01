@@ -27,6 +27,8 @@ import {
   stat,
   verdict,
   expert,
+  refs,
+  SOURCES,
 } from './dom'
 import { state } from './state'
 
@@ -166,6 +168,7 @@ export function mountMembership(root: HTMLElement): void {
         'not zero-knowledge proofs. Layering ZK on top is a real construction and an explicit ',
         'non-goal here.',
       ),
+      refs([SOURCES.baric, SOURCES.benaloh]),
     ),
     tryBox,
   )

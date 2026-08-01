@@ -36,7 +36,7 @@ import {
   HASH_BYTES,
 } from '../merkle/merkle'
 import { DEFAULT_NON_MEMBER } from '../accumulator/params'
-import { el, panel, clear, expert, labelledSelect, liveRegion, verdict } from './dom'
+import { add, el, panel, clear, expert, labelledSelect, liveRegion, refs, SOURCES, verdict } from './dom'
 import { state } from './state'
 
 const SVG_NS = 'http://www.w3.org/2000/svg'
@@ -74,10 +74,89 @@ export function mountCompare(root: HTMLElement): void {
     { value: '64', text: 'This page — 64-bit representatives' },
     { value: '256', text: 'Realistic — 256-bit representatives' },
   ])
+  const { wrap: sizeWrap, select: sizeSelect } = labelledSelect('cmp-size', 'Revoked certificates', [
+    { value: '1000', text: '1,000' },
+    { value: '100000', text: '100,000' },
+    { value: '10000000', text: '10 million' },
+  ])
+  const { wrap: setupWrap, select: setupSelect } = labelledSelect('cmp-setup', 'Trusted setup', [
+    { value: 'yes', text: 'We can run an MPC ceremony' },
+    { value: 'no', text: 'Nobody may hold p and q' },
+  ])
+  const { wrap: churnWrap, select: churnSelect } = labelledSelect('cmp-churn', 'Witness holders × churn', [
+    { value: 'low', text: '10 holders, weekly changes' },
+    { value: 'mid', text: '10,000 holders, hourly changes' },
+    { value: 'high', text: '1 million holders, constant changes' },
+  ])
   const chartHost = el('figure', { class: 'chart-figure' })
+  const deployControls = el('div', { class: 'controls' }, paramWrap, repWrap, sizeWrap, setupWrap, churnWrap)
+  const recommendation = el('div', { class: 'recommend-host' })
 
-  paramSelect.addEventListener('change', renderChart)
-  repSelect.addEventListener('change', renderChart)
+  for (const sel of [paramSelect, repSelect, sizeSelect, setupSelect, churnSelect]) {
+    sel.addEventListener('change', () => {
+      renderChart()
+      renderRecommendation()
+    })
+  }
+
+  const CHURN: Record<string, { holders: number; perDay: number; label: string }> = {
+    low: { holders: 10, perDay: 1 / 7, label: '10 holders, about one change a week' },
+    mid: { holders: 10_000, perDay: 24, label: '10,000 holders, hourly changes' },
+    high: { holders: 1_000_000, perDay: 24 * 60, label: 'a million holders, a change a minute' },
+  }
+
+  /**
+   * The comparison table is comprehensive; comprehensive is not the same as
+   * decided. This turns the same measurements into an answer, with the two
+   * inputs people forget — whether a trusted setup is even available, and what
+   * it costs to keep every witness holder current — made explicit.
+   */
+  function renderRecommendation(): void {
+    clear(recommendation)
+    const modBits = Number(paramSelect.value)
+    const repBits = Number(repSelect.value)
+    const n = Number(sizeSelect.value)
+    const setupAvailable = setupSelect.value === 'yes'
+    const churn = CHURN[churnSelect.value] ?? CHURN.low!
+
+    const accBytes = Math.ceil(modBits / 8) + Math.ceil(repBits / 8)
+    const merkleBytes = 2 * pathLength(n) * HASH_BYTES + 2 * 14
+    // Every change obliges every holder to refresh: the changed prime plus the
+    // new digest. A Merkle holder pulls a fresh path only when it needs one.
+    const perUpdate = Math.ceil(repBits / 8) + Math.ceil(modBits / 8)
+    const bytesPerDay = churn.perDay * churn.holders * perUpdate
+
+    let head: string
+    let why: string
+    if (!setupAvailable) {
+      head = 'Use a Merkle tree.'
+      why = `Without a setup nobody can subvert, an RSA accumulator is forgeable by whoever generated the modulus — and that is not a residual risk, it is a total break. Proof size stops being the deciding question. Class groups would remove the trapdoor, at a large performance cost and with far less mature implementations.`
+    } else if (merkleBytes <= accBytes) {
+      head = 'Use a Merkle tree here too.'
+      why = `At ${n.toLocaleString()} certificates a sorted-tree absence proof is ${merkleBytes} bytes against the accumulator's ${accBytes}. The accumulator is not yet buying you anything, and it still costs a ceremony, a number-theoretic assumption and no post-quantum story.`
+    } else if (bytesPerDay > 50 * 1024 * 1024) {
+      head = 'The accumulator has the smaller proof — and the bigger bill.'
+      why = `Its absence proof is ${accBytes} bytes against ${merkleBytes}, a ${(merkleBytes / accBytes).toFixed(1)}× saving per query. But ${churn.label} means roughly ${formatBytes(bytesPerDay)} a day of witness-update traffic, because every change obliges every holder to refresh. Merkle holders pull a path only when they need one. Batched updates (Boneh–Bünz–Fisch) exist precisely for this.`
+    } else {
+      head = 'Use the accumulator.'
+      why = `At ${n.toLocaleString()} certificates its absence proof is ${accBytes} bytes against ${merkleBytes}, it needs no ordering over the set, and it leaks nothing about other members. Witness maintenance costs about ${formatBytes(bytesPerDay)} a day at ${churn.label}, which is affordable at this churn.`
+    }
+
+    add(
+      recommendation,
+      el(
+        'div',
+        { class: 'recommend' },
+        el('span', { 'aria-hidden': 'true', class: 'verdict-icon', text: '▸' }),
+        el(
+          'div',
+          { class: 'recommend-body' },
+          el('p', { class: 'recommend-head', text: head }),
+          el('p', { class: 'recommend-why', text: why }),
+        ),
+      ),
+    )
+  }
 
   function renderChart(): void {
     clear(chartHost)
@@ -245,7 +324,6 @@ export function mountCompare(root: HTMLElement): void {
     table.appendChild(tbody)
 
     chartHost.append(
-      el('div', { class: 'controls' }, paramWrap, repWrap),
       s,
       legend,
       el('figcaption', {
@@ -362,9 +440,25 @@ export function mountCompare(root: HTMLElement): void {
     )
   }
 
+  const howComputed = expert(
+    'How these numbers were produced',
+    el(
+      'ul',
+      { class: 'rules' },
+      el('li', {}, 'Proof sizes: the real witnesses, serialised. One group element for membership; a group element plus the reduced Bezout coefficient for absence; ⌈log₂ n⌉ sibling hashes for a Merkle path, doubled plus both neighbouring entries for an absence proof.'),
+      el('li', {}, 'Timings: each verifier run 200 times in this tab and averaged, on the live set. They will differ on your machine — that is the point of measuring rather than quoting.'),
+      el('li', {}, 'The chart plots ⌈log₂ n⌉ × 32 bytes for Merkle paths, and that formula is re-checked against the real tree at n = 8, 64 and 512 every time this panel renders. If it ever disagreed, the line above would say so.'),
+      el('li', {}, 'The recommendation multiplies the per-change update payload (changed prime + new digest) by holders × changes per day. It assumes every holder must be reached; batching changes that number, and is out of scope here.'),
+    ),
+  )
+
   p.append(
+    el('h3', { text: 'Describe your deployment' }),
+    deployControls,
+    recommendation,
     measured,
     checks,
+    howComputed,
     el('h3', { text: 'How the two scale' }),
     chartHost,
     expert(
@@ -393,6 +487,7 @@ export function mountCompare(root: HTMLElement): void {
         class: 'note',
         text: 'The Merkle side is a real RFC 6962 implementation with its own unit tests, including a test that a non-adjacent pair of genuine inclusion proofs is rejected as an absence proof.',
       }),
+      refs([SOURCES.rfc6962, SOURCES.bbf]),
     ),
   )
 
@@ -400,6 +495,7 @@ export function mountCompare(root: HTMLElement): void {
   state.subscribe(renderMeasured)
   renderMeasured()
   renderChart()
+  renderRecommendation()
 }
 
 function niceStep(max: number): number {
@@ -407,4 +503,11 @@ function niceStep(max: number): number {
   const mag = 10 ** Math.floor(Math.log10(raw))
   for (const m of [1, 2, 2.5, 5, 10]) if (raw <= m * mag) return m * mag
   return 10 * mag
+}
+
+function formatBytes(n: number): string {
+  if (n >= 1024 ** 3) return `${(n / 1024 ** 3).toFixed(1)} GB`
+  if (n >= 1024 ** 2) return `${(n / 1024 ** 2).toFixed(1)} MB`
+  if (n >= 1024) return `${(n / 1024).toFixed(1)} kB`
+  return `${Math.round(n)} bytes`
 }

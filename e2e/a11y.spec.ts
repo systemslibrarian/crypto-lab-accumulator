@@ -47,6 +47,23 @@ async function scan(page: Page, label: string): Promise<void> {
  * Pass 1 — the healthy states. Everything on screen verifies.
  */
 async function driveHealthy(page: Page): Promise<void> {
+  // The guided tour FIRST: every beat replays from a reset, so driving it after
+  // the panels below would undo their state. Beats 1 and 2 leave a proof card
+  // in its verifying state.
+  await page.getByRole('button', { name: 'Build the revocation set' }).click()
+  await page.getByRole('button', { name: /^Prove cert:/ }).click()
+  await expect(page.locator('.proof-card .verdict-ok').first()).toBeVisible()
+
+  // The prediction challenge, revealed — its outcome column only exists then.
+  await page.getByRole('button', { name: 'Run all ten and reveal' }).click()
+  await expect(page.locator('#forge .predict-verdict').first()).toBeVisible()
+
+  // Every deployment control, so the recommendation renders each of its shapes.
+  await page.locator('#cmp-size').selectOption('10000000')
+  await page.locator('#cmp-setup').selectOption('no')
+  await page.locator('#cmp-churn').selectOption('high')
+  await expect(page.locator('.recommend-head')).toBeVisible()
+
   // The headline stepper, walked forward, back, and to the end.
   await page.getByRole('button', { name: 'Multiply in the next element' }).click()
   await page.getByRole('button', { name: 'Multiply in the next element' }).click()
@@ -100,16 +117,27 @@ async function driveHealthy(page: Page): Promise<void> {
  * their own scan.
  */
 async function driveFailures(page: Page): Promise<void> {
-  // Revoking mutates the shared set, which staleness-breaks every held witness.
+  // Run the tour to its end first (it replays from a reset). Beat 3 leaves a
+  // stale proof card with the three-line freshness readout; beat 4 leaves an
+  // accepted forgery rendered as an alarm.
+  await page.getByRole('button', { name: /^Now revoke cert:/ }).click()
+  await expect(page.locator('.proof-card')).toContainText('is stale')
+  await page.getByRole('button', { name: 'Break it with the trapdoor' }).click()
+  await expect(page.locator('.proof-card .verdict-alarm').first()).toContainText('FORGERY ACCEPTED')
+
+  // The revocation panel, driven through its own healthy → revoked cycle.
+  await page.getByRole('button', { name: 'Un-revoke it' }).click()
+  await page.getByRole('button', { name: 'Fetch a proof for this certificate' }).click()
   await page.getByRole('button', { name: 'Revoke this certificate' }).click()
   await expect(page.locator('#revocation .verdict-alarm').first()).toBeVisible()
-  await expect(page.locator('#dynamics .verdict-alarm').first()).toBeVisible()
 
-  // Repair what can be repaired; the revoked certificate's absence proof cannot.
+  // Mint, break and repair the held witnesses in the dynamic-set panel.
+  await page.getByRole('button', { name: 'Mint both witnesses now' }).click()
+  await page.getByRole('button', { name: 'Add to the set' }).click()
+  await expect(page.locator('#dynamics .verdict-alarm').first()).toBeVisible()
   await page.getByRole('button', { name: 'Update both witnesses (public data only)' }).click()
 
-  // Add and remove through the set editor so both change kinds are exercised.
-  await page.getByRole('button', { name: 'Add to the set' }).click()
+  // Remove through the set editor so the delete path is exercised too.
   await page.getByRole('button', { name: /^Remove cert:/ }).first().click()
 
   // Try to prove absence of something that is present — the impossible case.
@@ -143,6 +171,16 @@ test('no WCAG A/AA violations — dark theme', async ({ page }) => {
   await scan(page, 'dark / healthy')
   await driveFailures(page)
   await scan(page, 'dark / failures')
+})
+
+test('no WCAG A/AA violations — 390px viewport', async ({ page }) => {
+  // The narrow layout swaps the exhibit navigator for a menu and stacks the
+  // guided stage, so it is a genuinely different DOM to scan.
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('.')
+  await page.locator('.labnav-select').selectOption('compare')
+  await driveHealthy(page)
+  await scan(page, 'mobile / healthy')
 })
 
 test('no WCAG A/AA violations — light theme', async ({ page }) => {

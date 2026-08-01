@@ -9,7 +9,7 @@
 
 import { bitLength } from '../core/bigint'
 import { generateParams } from '../accumulator/accumulator'
-import { add, el, panel, button, clear, elide, expert, hexBlock, hexOf, labelledSelect, liveRegion, stat, verdict } from './dom'
+import { add, el, panel, button, clear, elide, expert, hexBlock, hexOf, labelledSelect, liveRegion, refs, SOURCES, stat, verdict } from './dom'
 import { SHIPPED_PARAMS } from '../accumulator/params'
 import { state } from './state'
 
@@ -152,6 +152,7 @@ export function mountSetup(root: HTMLElement): void {
         class: 'note',
         text: 'On size: 512 bits was factored in 1999. Anything real needs 3072 bits or more, which makes every exponentiation on this page roughly two hundred times slower — the reason the shipped modulus is a toy.',
       }),
+      refs([SOURCES.bbf]),
     ),
   )
 

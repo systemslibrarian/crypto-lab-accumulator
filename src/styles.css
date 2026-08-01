@@ -163,6 +163,16 @@ body {
 @media (max-width:640px){.cl-hero{flex-direction:column;}.cl-hero-why{flex-basis:auto;width:100%;}}
 /* END cl-hero standard */
 
+/* Deliberately OUTSIDE the managed block so it stays byte-identical to the
+   fleet copy. In the <640px column layout `flex: 1 1 22rem` makes 22rem a
+   *height* basis, padding the hero with ~107px of empty space and pushing the
+   first interactive control off a 390px screen. Worth upstreaming. */
+@media (max-width: 640px) {
+  .cl-hero-main {
+    flex-basis: auto;
+  }
+}
+
 /* ---- Panels ---- */
 #exhibits {
   display: flex;
@@ -788,4 +798,399 @@ body {
     min-width: 0;
     max-width: 100%;
   }
+}
+
+/* ---- Guided tour: the visual centrepiece ---------------------------------
+   Deliberately NOT a `.panel`. Bordered panels are the lab's tool/result
+   treatment; the guided stage is a diagram, so it gets its own composition —
+   a full-width accent-tinted surface with a set → digest → proof rail. That
+   is what makes this primitive recognisable in a single screenshot. */
+.tour {
+  border: 1px solid color-mix(in oklab, var(--accent) 38%, var(--border));
+  border-radius: 14px;
+  padding: clamp(1rem, 2.5vw, 1.6rem);
+  margin: 0 0 1.4rem;
+  background:
+    linear-gradient(
+      160deg,
+      color-mix(in oklab, var(--accent) 11%, var(--surface)),
+      var(--surface) 62%
+    );
+}
+.tour-headrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.tour-eyebrow {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+.tour-dots {
+  display: flex;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.tour-dot {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background-color: var(--surface-2);
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.tour-dot.is-done {
+  border-color: var(--ok-text);
+  color: var(--ok-text);
+}
+.tour-dot.is-current {
+  border-color: var(--accent);
+  border-width: 2px;
+  background-color: var(--accent);
+  color: var(--ink-on-accent);
+}
+.tour-title {
+  margin: 0.5rem 0 0;
+  font-size: clamp(1.25rem, 2.6vw, 1.7rem);
+  line-height: 1.2;
+}
+.tour-text {
+  margin: 0.4rem 0 0;
+  max-width: 74ch;
+  color: var(--text-dim);
+  font-size: 0.98rem;
+}
+.tour-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 0.8rem;
+  margin: 0.9rem 0 0.2rem;
+}
+.btn-tour {
+  padding: 0.62rem 1.1rem;
+  font-size: 0.98rem;
+}
+.tour-skip {
+  color: var(--accent-text);
+  text-decoration: underline;
+  font-size: 0.86rem;
+}
+.tour-live:empty {
+  display: none;
+}
+
+.tour-stage {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  gap: 0.6rem;
+  align-items: stretch;
+  margin-top: 1rem;
+}
+.stage-col {
+  min-width: 0;
+  background-color: color-mix(in oklab, var(--surface-2) 78%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 0.7rem 0.8rem 0.85rem;
+}
+.stage-label {
+  margin: 0 0 0.45rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.stage-note {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+.stage-arrow {
+  display: grid;
+  place-items: center;
+  color: var(--text-dim);
+  font-size: 1.1rem;
+}
+
+.chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 0.18rem 0.6rem;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-size: 0.75rem;
+  background-color: var(--surface);
+}
+.chip-subject {
+  border-color: var(--alarm-text);
+  color: var(--alarm-text);
+}
+.chip-new {
+  border-color: var(--accent);
+  border-width: 2px;
+}
+.chip-tag {
+  font-family: system-ui, sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+
+.digest-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  border: 2px solid var(--accent);
+  border-radius: 9px;
+  padding: 0.5rem 0.65rem;
+  background-color: var(--surface);
+}
+.digest-version {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+.digest-hex {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+/* Purposeful motion only: this fires when the digest actually changed, and
+   never on an idle re-render. */
+@keyframes digest-flip {
+  from {
+    background-color: color-mix(in oklab, var(--accent) 30%, var(--surface));
+  }
+  to {
+    background-color: var(--surface);
+  }
+}
+.digest-rail.is-fresh {
+  animation: digest-flip 900ms ease-out 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .digest-rail.is-fresh {
+    animation: none;
+  }
+}
+
+.tag-toy {
+  display: inline-block;
+  border: 1px solid var(--warn-text);
+  border-radius: 4px;
+  padding: 0 0.3rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--warn-text);
+  background-color: var(--warn-bg);
+}
+
+.proof-card {
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 0.6rem 0.7rem;
+  background-color: var(--surface);
+}
+.proof-empty {
+  border-style: dashed;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+.proof-empty p {
+  margin: 0;
+}
+.proof-kind {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.proof-subject {
+  margin: 0.1rem 0 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.proof-card .verdict {
+  padding: 0.35rem 0.55rem;
+  margin: 0.35rem 0;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 900px) {
+  .tour-stage {
+    grid-template-columns: 1fr;
+  }
+  .stage-arrow {
+    transform: rotate(90deg);
+  }
+}
+
+/* ---- Exhibit navigator --------------------------------------------------- */
+.labnav {
+  position: sticky;
+  top: 62px;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: nowrap;
+  margin-bottom: 1.2rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background-color: color-mix(in oklab, var(--surface) 92%, var(--accent));
+  backdrop-filter: blur(6px);
+}
+.labnav-scroll {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+}
+.labnav-list {
+  display: flex;
+  gap: 0.15rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+}
+#app .labnav-link {
+  display: inline-block;
+  padding: 0.28rem 0.55rem;
+  border-radius: 7px;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+#app .labnav-link:hover {
+  color: var(--text);
+  background-color: var(--surface-2);
+}
+#app .labnav-link.is-current {
+  color: var(--accent-text);
+  border-bottom-color: var(--accent);
+  font-weight: 700;
+}
+.labnav-select {
+  display: none;
+  flex: 1 1 auto;
+}
+.labnav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 0 0 auto;
+}
+.labnav-status {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  white-space: nowrap;
+}
+.labnav-sep {
+  margin: 0 0.3rem;
+}
+.btn-small {
+  padding: 0.28rem 0.6rem;
+  font-size: 0.78rem;
+}
+@media (max-width: 760px) {
+  .labnav-scroll {
+    display: none;
+  }
+  .labnav-select {
+    display: block;
+  }
+  .labnav-status {
+    display: none;
+  }
+}
+
+/* ---- Prediction challenge (attack panel) --------------------------------- */
+.predict-verdict {
+  font-weight: 700;
+}
+.predict-right {
+  color: var(--ok-text);
+}
+.predict-wrong {
+  color: var(--alarm-text);
+}
+.datatable td select {
+  font-size: 0.82rem;
+  padding: 0.2rem 1.6rem 0.2rem 0.45rem;
+}
+
+/* ---- Decision recommendation (comparison panel) -------------------------- */
+.recommend {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  padding: 0.7rem 0.9rem;
+  margin: 0.7rem 0;
+  background-color: color-mix(in oklab, var(--accent) 8%, var(--surface-2));
+}
+.recommend-body {
+  min-width: 0;
+}
+.recommend-head {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.recommend-why {
+  margin: 0.3rem 0 0;
+  font-size: 0.88rem;
+  color: var(--text-dim);
+}
+
+/* ---- Citations ----------------------------------------------------------- */
+.refs {
+  list-style: none;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  font-size: 0.85rem;
+}
+.refs li {
+  margin: 0.35rem 0;
+  color: var(--text-dim);
+}
+.refs cite {
+  font-style: normal;
+  color: var(--text);
 }

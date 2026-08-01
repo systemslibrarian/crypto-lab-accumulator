@@ -30,6 +30,8 @@ import {
   labelledInput,
   labelledSelect,
   liveRegion,
+  refs,
+  SOURCES,
   stat,
   verdict,
 } from './dom'
@@ -344,6 +346,7 @@ export function mountDynamics(root: HTMLElement): void {
         'refetch the path", and it is why batched and delegated witness updates are an active ',
         'area rather than a solved one.',
       ),
+      refs([SOURCES.camenisch, SOURCES.li, SOURCES.bbf]),
     ),
     delBox,
   )
