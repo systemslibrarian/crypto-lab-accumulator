@@ -8,13 +8,20 @@ import { defineConfig } from '@playwright/test'
  */
 export default defineConfig({
   testDir: './e2e',
+  // The gate is four independent configurations — {dark, light} × {1280, 380} —
+  // and each one drives the whole lab from scratch. Without this Playwright
+  // parallelises by FILE, so all four run in series in one worker and the gate
+  // takes four times as long for no reason.
+  fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: 'list',
   use: {
     baseURL: 'http://localhost:4295/crypto-lab-accumulator/',
-    // Pin the emulated scheme to dark so the default scan is the real dark
-    // default and the shared-header toggle deterministically reaches light.
+    // The lab reads its theme from localStorage and never consults
+    // prefers-color-scheme, so this pins only the UA form-control rendering.
+    // The gate sets the theme it wants through localStorage before navigating
+    // and then asserts `html[data-theme]` actually landed there.
     colorScheme: 'dark',
   },
   webServer: {

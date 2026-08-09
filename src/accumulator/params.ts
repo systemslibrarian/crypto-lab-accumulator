@@ -27,7 +27,10 @@ export const SHIPPED_PARAMS: AccumulatorParams = Object.freeze({
   provenance: 'shipped' as const,
 })
 
-/** The starting set: four certificate serials, one of which is already revoked. */
+/**
+ * The starting set: three certificate serials, all of them revoked. The set IS
+ * the revocation list, so membership in it is exactly what "revoked" means.
+ */
 export const DEFAULT_SET: readonly string[] = Object.freeze([
   'cert:SN-0xA31F',
   'cert:SN-0xB77C',

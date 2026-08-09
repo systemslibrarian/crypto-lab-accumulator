@@ -2,7 +2,12 @@
    No prefers-color-scheme anywhere: the shared top bar owns the toggle.
 
    Contrast targets: body text >= 4.5:1, large text and UI components >= 3:1,
-   in BOTH themes, gated by axe in CI. Muted text lowers LIGHTNESS rather than
+   in BOTH themes. Text contrast is gated in CI by e2e/a11y.spec.ts, which
+   measures every painted ratio arithmetically rather than trusting axe — axe
+   declines to resolve the color-mix() surfaces this file is built from, and
+   files them as "incomplete" rather than as failures. Nothing gates the >= 3:1
+   non-text half; those are hand measurements, recorded beside the tokens they
+   apply to. Muted text lowers LIGHTNESS rather than
    using opacity. State is never colour alone — every verdict is icon + word +
    colour, and the colour tracks SYSTEM INTEGRITY rather than the return value,
    so a forgery the verifier accepted renders as alarm. */
@@ -45,10 +50,22 @@ html[data-theme='light'] {
   /* Load-bearing control boundary: >=3:1 against bg, surface and surface-2. */
   --border-strong: #718b9d;
 
+  /* This theme needs its OWN accent. --accent is nowhere a text colour — it is
+     the fill of every primary .btn, the bar of every .meter-fill, the stroke
+     marking .chain-current, .chip-new and .tour-dot.is-current, and the
+     underline on the current .labnav-link. All of that is WCAG 1.4.11 surface,
+     needing 3:1 against what it sits on. The dark theme's #0ea5e9 clears that
+     easily there — 6.34:1 on --surface, 5.71:1 on --surface-2, 6.84:1 on --bg —
+     and, left undeclared here, was painted unchanged on near-white, where the
+     same hue measures 2.77:1, 2.38:1 and 2.55:1. Every one of those is under
+     the floor, and none of them is text, so no contrast oracle reports it. */
+  --accent: #0b6a95;
+
   --text: #0d1a23;
   --text-dim: #45606f;
   --accent-text: #0b6a95;
-  --ink-on-accent: #04202e;
+  /* Paired with the accent above, on which #04202e would be 1.71:1. */
+  --ink-on-accent: #ffffff;
 
   --ok-text: #0a6437;
   --ok-bg: #e2f3e9;
@@ -928,6 +945,14 @@ body {
   place-items: center;
   color: var(--text-dim);
   font-size: 1.1rem;
+  /* Decoration only — it is aria-hidden and carries no target. Below 900px the
+     stage stacks and this box is rotated 90deg, which spins a full-column-wide,
+     ~27px-tall element into a ~27px-wide, ~330px-tall one: transforms do not
+     re-flow, so that strip lands on top of the neighbouring columns and used to
+     swallow every click through the middle of the stage — including the one on
+     the digest's "Inspect values" summary. Painting it without taking pointer
+     events is the fix; shrinking it would only move the overlap. */
+  pointer-events: none;
 }
 
 .chips {
