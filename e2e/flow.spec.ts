@@ -204,16 +204,11 @@ test.describe('layout', () => {
     }
   })
 
-  test('the comparison chart renders in both themes', async ({ page }) => {
+  test('the comparison chart renders', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto('.')
     await page.locator('#compare').scrollIntoViewIfNeeded()
     await expect(page.locator('#compare .chart')).toBeVisible()
     await page.locator('#compare .chart').screenshot({ path: `${SHOTS}/chart-dark.png` })
-
-    await page.locator('#cl-theme-toggle').click()
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
-    await expect(page.locator('#compare .chart')).toBeVisible()
-    await page.locator('#compare .chart').screenshot({ path: `${SHOTS}/chart-light.png` })
   })
 })
