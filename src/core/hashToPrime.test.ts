@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { sha256 } from '@noble/hashes/sha256'
+import { sha256 } from '@noble/hashes/sha2.js'
 import kat from '../fixtures/kat.json'
 import { hashToPrime, bytesToHex, REPRESENTATIVE_BITS } from './hashToPrime'
 import { isProbablePrime } from './primes'
