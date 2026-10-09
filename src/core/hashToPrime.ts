@@ -21,7 +21,7 @@
  * and a collision is a forgery. This is stated on the page.
  */
 
-import { sha256 } from '@noble/hashes/sha256'
+import { sha256 } from '@noble/hashes/sha2.js'
 import { bytesToBigInt } from './bigint'
 import { isProbablePrime } from './primes'
 

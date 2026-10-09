@@ -15,7 +15,7 @@
  * the point of this file.
  */
 
-import { sha256 } from '@noble/hashes/sha256'
+import { sha256 } from '@noble/hashes/sha2.js'
 import { bytesToHex } from '../core/hashToPrime'
 
 export const HASH_BYTES = 32
