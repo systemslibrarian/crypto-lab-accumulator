@@ -336,6 +336,10 @@ body {
   color: var(--alarm-text);
   border-color: var(--alarm-text);
 }
+.btn-icon::before {
+  content: "\2715";
+}
+
 .btn-icon {
   padding: 0.2rem 0.5rem;
   background-color: transparent;
