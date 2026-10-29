@@ -218,6 +218,18 @@ export function mountDynamics(root: HTMLElement): void {
       )
       const rm = li.querySelector('button')!
       rm.setAttribute('aria-label', `Remove ${label} from the set`)
+      // The glyph is decoration, not a label. axe 4.14's
+      // label-content-name-mismatch (WCAG 2.5.3 Label in Name) compares an
+      // accessible name against the control's VISIBLE text, and a bare U+2715
+      // counts as visible text that "Remove <label> from the set" does not
+      // contain. Hiding the glyph from the accessibility tree leaves the
+      // aria-label as the whole name, which is what a speech-input user can
+      // actually say. The button looks identical.
+      rm.textContent = ''
+      const glyph = document.createElement('span')
+      glyph.setAttribute('aria-hidden', 'true')
+      glyph.textContent = '\u2715'
+      rm.appendChild(glyph)
       setList.appendChild(li)
     }
     if (state.labels.length === 0) {
