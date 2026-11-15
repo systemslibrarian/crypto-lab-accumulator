@@ -132,6 +132,25 @@ describe('why the construction needs what it needs', () => {
     // assumption, and it is exactly what this demo cannot demonstrate.
   })
 
+  it('the TRAPDOOR also mints a NON-membership witness for a member', () => {
+    // No Bezout pair exists for a member — gcd(x, u) = x — so the honest
+    // construction refuses. The verification equation A^a · d^x = g is weaker:
+    // for ANY a there is a d, namely the x-th root of g·A^(−a), and the group
+    // order makes that one inverse and one exponentiation. The page must not
+    // claim such a witness cannot exist "for anyone".
+    const x = primes[0]!
+    expect(() => nonMembershipWitness(P, primes, x)).toThrow(/IS a member/)
+
+    const { p, q } = P.trapdoor!
+    const order = ((p - 1n) / 2n) * ((q - 1n) / 2n)
+    const xInv = modInv(mod1(x, order), order)
+    for (let i = 0; i < 4; i++) {
+      const a = randBelow(x)
+      const d = modPow((P.g * modInv(modPow(A, a, P.N), P.N)) % P.N, xInv, P.N)
+      expect(verifyNonMembership(P, A, { x, a, d }).ok).toBe(true)
+    }
+  })
+
   it('an element outside the group (gcd(w, N) ≠ 1) still cannot satisfy the equation', () => {
     const { p } = P.trapdoor!
     expect(verifyMembership(P, A, { e: outsider, w: p }).ok).toBe(false)

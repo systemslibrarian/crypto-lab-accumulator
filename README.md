@@ -59,7 +59,7 @@ anchor, so any of them can be linked from a class or a slide):
    non-member, and seeing that `u/e` is simply not an integer.
 5. **Non-membership proof** — the Bézout identity shown as an identity (the actual `a` and `b`),
    then reduced and hidden in the exponent, then verified. Ask about an element that *is* in the
-   set and watch the proof become impossible rather than merely fail.
+   set and watch the construction become impossible rather than merely fail.
 6. **A living set — and the witnesses that go stale** — two witnesses are held on your behalf, go
    stale on every change, and are repaired by the published update rules using public data only.
    Deletion is run both ways — recompute over the set, and the one-exponentiation trapdoor

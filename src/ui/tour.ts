@@ -340,7 +340,7 @@ export function mountTour(root: HTMLElement): void {
               'alarm',
               `Proof invalid against current digest #${state.version}`,
               state.has(held.subject)
-                ? `${held.subject} is now in the revoked set, so no proof of absence can exist for anyone`
+                ? `${held.subject} is now in the revoked set, so no honest proof of absence can be built for it`
                 : 'refetch before trusting it',
             ),
       )

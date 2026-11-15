@@ -8,6 +8,7 @@
  */
 
 import { bitLength } from '../core/bigint'
+import { expectedSafePrimeCandidates } from '../core/primes'
 import { generateParams } from '../accumulator/accumulator'
 import { add, el, panel, button, clear, elide, expert, hexBlock, hexOf, labelledSelect, liveRegion, refs, SOURCES, stat, verdict } from './dom'
 import { SHIPPED_PARAMS } from '../accumulator/params'
@@ -66,7 +67,7 @@ export function mountSetup(root: HTMLElement): void {
         ),
         el('p', {
           class: 'note',
-          text: 'Every panel above has been recomputed in the new parameters, and every witness was reminted. Safe primes are rare — roughly one candidate in a few thousand at this size — which is why the counter climbs so far before it stops.',
+          text: `Every panel above has been recomputed in the new parameters, and every witness was reminted. Safe primes are rare — at the ${bits >> 1} bits each half of this modulus needs, roughly one odd candidate in ${Number(expectedSafePrimeCandidates(bits >> 1).toPrecision(2)).toLocaleString()} is one — which is why the counter climbs so far before it stops.`,
         }),
       )
     } catch (err) {

@@ -623,7 +623,7 @@ export async function driveAllStates(page: Page, theme: string): Promise<void> {
   await page.locator('#nonmem-el').fill('cert:SN-0xA31F');
   await proveAbsence.click();
   await expect(live('Non-membership proof result').locator('.verdict-ok')).toContainText(
-    'No proof of absence exists'
+    'No proof of absence can be built'
   );
   await scanAt('non-membership — absence of a present element is unprovable');
 

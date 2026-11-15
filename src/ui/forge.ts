@@ -157,7 +157,7 @@ export function mountForge(root: HTMLElement): void {
           lhsLabel: 'A^a · d^x mod N',
           rhsLabel: 'generator g',
           explain:
-            'Guessing a Bezout pair for a number that shares a factor with u is not a hard problem — it is an impossible one. No (a, d) exists, so no amount of guessing finds it.',
+            'Guessing is hopeless, but not because the equation has no solution. x shares a factor with u, so there are no integers a, b with a·u + b·x = 1 and the honest construction has nothing to build from. The verification equation is weaker than the Bezout identity: for any a at all, the d that satisfies it is the x-th root of g·A^(−a), and whoever holds the factorisation of N can take that root in one step. Without it, finding d is the hard problem.',
           facts: [
             ['Target', victim],
             ['gcd(x, u)', gcd(x, exponentProduct(state.primes)).toString()],

@@ -128,7 +128,7 @@ export function mountRevocation(root: HTMLElement): void {
               'alarm',
               'PROOF REJECTED — do not trust this certificate',
               revoked
-                ? 'the certificate has been revoked since this proof was minted, and no updated proof of absence can exist'
+                ? 'the certificate has been revoked since this proof was minted, and no updated proof of absence can be built for it'
                 : 'the set changed and this proof is stale — refetch before trusting it',
             ),
       )
@@ -143,7 +143,7 @@ export function mountRevocation(root: HTMLElement): void {
             : verdict('warn', 'Unexpected', 'the revocation proof did not verify'),
           el('p', {
             class: 'note',
-            text: 'Note the asymmetry the learner should take away: absence can be re-proved after an addition is undone, but while the certificate is in the set there is no witness of absence for anyone to find — not for an attacker, and not for the CA either.',
+            text: 'Note the asymmetry the learner should take away: absence can be re-proved after an addition is undone, but while the certificate is in the set no honest witness of absence can be built — the Bezout identity it is made of does not exist. The verification equation can still be satisfied, but only by someone able to take x-th roots, which means the holder of the factorisation of N.',
           }),
         )
       }

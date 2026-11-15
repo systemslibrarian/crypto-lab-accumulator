@@ -52,7 +52,7 @@ export function mountNonMembership(root: HTMLElement): void {
   const hint = el('p', {
     id: 'nonmem-hint',
     class: 'note',
-    text: 'Any text works — it gets hashed to a prime. Try a serial that is in the set to see the proof become impossible.',
+    text: 'Any text works — it gets hashed to a prime. Try a serial that is in the set to see the construction become impossible.',
   })
   const out = liveRegion('Non-membership proof result')
   const controls = el('div', { class: 'controls' }, wrap, button('Build witness and verify', run))
@@ -87,12 +87,12 @@ export function mountNonMembership(root: HTMLElement): void {
       out.append(
         verdict(
           'ok',
-          'No proof of absence exists',
-          `x divides u, so "${label}" is in the set — the maths refuses to lie about it`,
+          'No proof of absence can be built',
+          `x divides u, so "${label}" is in the set — the Bezout identity a proof is made of does not exist`,
         ),
         el('p', {
           class: 'note',
-          text: `Bezout needs gcd(x, u) = 1. Here the gcd is ${common}, i.e. x itself. There are no integers a and b with a·u + b·x = 1, so no witness can be constructed by anyone — including someone holding the trapdoor.`,
+          text: `Bezout needs gcd(x, u) = 1. Here the gcd is ${common}, i.e. x itself. There are no integers a and b with a·u + b·x = 1, so the honest construction has nothing to build from. The verification equation A^a · d^x = g is weaker than the identity: for any a, the d that satisfies it is the x-th root of g·A^(−a), which the holder of the trapdoor can take in one step. Nobody else can — that is the assumption this panel rests on, not an impossibility.`,
         }),
       )
       return

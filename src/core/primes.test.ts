@@ -1,6 +1,14 @@
 import { describe, it, expect } from 'vitest'
 import kat from '../fixtures/kat.json'
-import { isProbablePrime, nextPrime, isSafePrime, generateSafePrime, SMALL_PRIMES, passesTrialDivision } from './primes'
+import {
+  isProbablePrime,
+  nextPrime,
+  isSafePrime,
+  generateSafePrime,
+  expectedSafePrimeCandidates,
+  SMALL_PRIMES,
+  passesTrialDivision,
+} from './primes'
 import { bitLength } from './bigint'
 
 describe('small prime sieve', () => {
@@ -66,5 +74,19 @@ describe('safe primes', () => {
 
   it('refuses a size too small to be meaningful', async () => {
     await expect(generateSafePrime(8)).rejects.toThrow(RangeError)
+  })
+
+  it('estimates the candidate count this generator actually draws', () => {
+    // Measured by running generateSafePrime itself 2,000 times per size
+    // (1,000 at 192 bits) on 15 November 2026: 2,911 odd candidates drawn per
+    // 128-bit safe prime, 6,617 at 192 bits, 12,029 at 256 bits. The setup
+    // panel prints this estimate, so a wrong one is a wrong page.
+    expect(expectedSafePrimeCandidates(128)).toBeGreaterThan(2_700)
+    expect(expectedSafePrimeCandidates(128)).toBeLessThan(3_150)
+    expect(expectedSafePrimeCandidates(192)).toBeGreaterThan(6_200)
+    expect(expectedSafePrimeCandidates(192)).toBeLessThan(7_050)
+    // The halves of the shipped 512-bit modulus: twelve thousand, not "a few".
+    expect(expectedSafePrimeCandidates(256)).toBeGreaterThan(11_000)
+    expect(expectedSafePrimeCandidates(256)).toBeLessThan(12_700)
   })
 })
