@@ -300,7 +300,7 @@ export function mountForge(root: HTMLElement): void {
       lhsLabel: 'w^e mod N',
       rhsLabel: 'digest A',
       explain:
-        'Under the Strong RSA assumption, finding any w with w^e = A for a prime e you do not hold a root for is believed to be as hard as factoring N. Every guess of this shape fails for the same reason: the verifier is asking for an e-th root, and there is exactly one that works.',
+        'Finding a w with w^e = A for any e > 1 of your own choosing is the Strong RSA problem; assuming it is hard is a stronger assumption than plain RSA, where e is fixed in advance and only the root is sought. Anyone who can factor N solves it immediately, but no reduction the other way is known, so it is not known to be as hard as factoring. Every guess of this shape fails for the same reason: the verifier is asking for an e-th root, and there is exactly one that works.',
       facts: [
         ['Claimed element', label],
         ['In the set?', state.has(label) ? 'yes' : 'no'],
