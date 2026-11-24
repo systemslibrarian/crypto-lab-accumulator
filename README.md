@@ -88,9 +88,9 @@ systems proving a credential is not revoked.
   forgeable by that party, full stop. Use a Merkle tree, or class groups, or an MPC ceremony.
 - **You need post-quantum security.** Shor's algorithm factors `N` and the accumulator falls with
   it. A hash-based Merkle tree does not.
-- **Witness holders cannot be kept up to date.** Every change invalidates every outstanding witness.
-  If your clients cannot be reached to update them, the logarithmic refetch of a Merkle path is a
-  far simpler operational story.
+- **Witness holders cannot be kept up to date.** In the immediate-update RSA model demonstrated here,
+  cached witnesses can become stale when the digest changes. If clients cannot keep proofs current,
+  the logarithmic refetch of a Merkle path may be a simpler operational story.
 - **The set is small.** At realistic parameters the accumulator's proofs only become smaller than a
   Merkle tree's somewhere past a few thousand elements. The comparison panel plots where.
 
@@ -122,8 +122,9 @@ browser.
   parameters have to be generated so that nobody holds them.
 - **A collision in hash-to-prime is a forgery.** At the 64 bits used here that is roughly 2³² work.
   Real deployments use around 256-bit representatives.
-- **A stale witness is a rejected witness.** Every add and every delete breaks every outstanding
-  witness. The update rules repair them from public data, but somebody has to actually run them.
+- **A stale witness is a rejected witness.** In this lab, adding or deleting an element normally
+  makes the cached witnesses stale against the new digest. The update rules repair still-valid
+  membership or non-membership claims from public data, but somebody has to run them.
 - **A witness says nothing about freshness.** It proves a statement about *a* digest, not about the
   current one. The digest still needs a signature and a validity window, exactly as a CRL does.
 - **Witnesses are not zero-knowledge.** A membership witness is a function of every other member of
@@ -146,6 +147,13 @@ The active research direction is batching: **Boneh–Bünz–Fisch (CRYPTO 2019)
 witness updates and aggregate proofs, and moved the construction into **class groups of imaginary
 quadratic fields**, where there is no trapdoor to lose because the group order is not efficiently
 computable by anyone.
+
+**Research note (24 November 2026):** Wei Qi's revised preprint,
+[*The Structure of Witness-Update Tradeoffs in Additive Positive Accumulators*](https://opencryptology.org/2026/2362),
+studies how the size of a growing set's public state trades off against patterns of witness updates
+under its stated model (see the revised abstract). The immediate-update cost model in this lab
+assumes all holders receive every change; other constructions and maintenance schedules can have
+different costs. This note does not imply that Qi's construction is implemented here.
 
 ## How to Run Locally
 

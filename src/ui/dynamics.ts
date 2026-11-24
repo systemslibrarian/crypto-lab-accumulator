@@ -1,11 +1,10 @@
 /**
  * Dynamic updates and witness maintenance.
  *
- * This is the break-it-yourself panel for the property people assume
- * accumulators have and they do not: witnesses are NOT stable. Change the set
- * and every outstanding witness stops verifying. The learner causes that
- * failure here, sees the real verifier reject, and then repairs it with the
- * published update rules — which need no secret and no knowledge of the set.
+ * This panel demonstrates witness freshness in this RSA accumulator.
+ * Changing the set can make the cached witnesses stale against the current
+ * digest. The learner checks them with the real verifier and repairs
+ * still-valid claims using published public-data update rules.
  */
 
 import { bitLength } from '../core/bigint'
@@ -42,7 +41,7 @@ export function mountDynamics(root: HTMLElement): void {
   const p = panel(
     'dynamics',
     'A living set — and the witnesses that go stale',
-    'Add or revoke an element and the digest changes without changing size. Every witness anyone was holding is now worthless until it is updated. Break it, then repair it.',
+    'Add or revoke an element in this RSA accumulator and check the cached witnesses against the new digest. Witnesses that go stale must be refreshed for the current set. Break it, then repair it.',
   )
 
   // --- set editor -----------------------------------------------------------
@@ -353,10 +352,14 @@ export function mountDynamics(root: HTMLElement): void {
       el(
         'p',
         {},
-        'The operational cost is real: every holder of a witness must learn about every change, ',
-        'or ask someone who did. That is the accumulator’s answer to the Merkle tree’s "just ',
-        'refetch the path", and it is why batched and delegated witness updates are an active ',
-        'area rather than a solved one.',
+        'In the lab’s immediate-update model, each witness holder needs the public update data for each change, ',
+        'or can obtain a fresh proof from someone who maintains it. Other constructions and maintenance ',
+        'schedules can trade public-state size against witness-maintenance costs.',
+      ),
+      el('p', { id: 'witness-update-research', class: 'note' },
+        'Research note (24 November 2026): ',
+        el('a', { href: 'https://opencryptology.org/2026/2362', target: '_blank', rel: 'noopener', text: 'Wei Qi, The Structure of Witness-Update Tradeoffs in Additive Positive Accumulators' }),
+        ' (revised preprint abstract). The paper studies tradeoffs between public-state size and update patterns for growing sets. This lab retains its RSA construction and immediate-update teaching model.',
       ),
       refs([SOURCES.camenisch, SOURCES.li, SOURCES.bbf]),
     ),

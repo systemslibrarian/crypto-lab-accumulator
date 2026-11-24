@@ -121,8 +121,8 @@ export function mountCompare(root: HTMLElement): void {
 
     const accBytes = Math.ceil(modBits / 8) + Math.ceil(repBits / 8)
     const merkleBytes = 2 * pathLength(n) * HASH_BYTES + 2 * 14
-    // Every change obliges every holder to refresh: the changed prime plus the
-    // new digest. A Merkle holder pulls a fresh path only when it needs one.
+    // Immediate-update model: send each holder the changed prime and the new
+    // digest after each change. A Merkle holder pulls a fresh path on demand.
     const perUpdate = Math.ceil(repBits / 8) + Math.ceil(modBits / 8)
     const bytesPerDay = churn.perDay * churn.holders * perUpdate
 
@@ -136,10 +136,10 @@ export function mountCompare(root: HTMLElement): void {
       why = `At ${n.toLocaleString()} certificates a sorted-tree absence proof is ${merkleBytes} bytes against the accumulator's ${accBytes}. The accumulator is not yet buying you anything, and it still costs a ceremony, a number-theoretic assumption and no post-quantum story.`
     } else if (bytesPerDay > 50 * 1024 * 1024) {
       head = 'The accumulator has the smaller proof — and the bigger bill.'
-      why = `Its absence proof is ${accBytes} bytes against ${merkleBytes}, a ${(merkleBytes / accBytes).toFixed(1)}× saving per query. But ${churn.label} means roughly ${formatBytes(bytesPerDay)} a day of witness-update traffic, because every change obliges every holder to refresh. Merkle holders pull a path only when they need one. Batched updates (Boneh–Bünz–Fisch) exist precisely for this.`
+      why = `Its absence proof is ${accBytes} bytes against ${merkleBytes}, a ${(merkleBytes / accBytes).toFixed(1)}× saving per query. But ${churn.label} means roughly ${formatBytes(bytesPerDay)} a day of witness-update traffic, under the model where every holder receives each change. Merkle holders pull a path only when they need one. Batched updates (Boneh–Bünz–Fisch) exist precisely for this.`
     } else {
       head = 'Use the accumulator.'
-      why = `At ${n.toLocaleString()} certificates its absence proof is ${accBytes} bytes against ${merkleBytes}, it needs no ordering over the set, and it leaks nothing about other members. Witness maintenance costs about ${formatBytes(bytesPerDay)} a day at ${churn.label}, which is affordable at this churn.`
+      why = `At ${n.toLocaleString()} certificates its absence proof is ${accBytes} bytes against ${merkleBytes}, it needs no ordering over the set, and it leaks nothing about other members. Estimated immediate-update traffic is about ${formatBytes(bytesPerDay)} a day at ${churn.label}, which is affordable in this model.`
     }
 
     add(
@@ -385,7 +385,7 @@ export function mountCompare(root: HTMLElement): void {
       ],
       ['Add one element', '1 exponentiation on the digest', 'rebuild ⌈log₂ n⌉ nodes, re-sort if needed'],
       ['Delete one element', 'recompute over the set, or 1 exponentiation with the trapdoor', 'rebuild the path'],
-      ['Old proofs after a change', 'all invalid — every holder must update', 'all invalid — but refetching is cheap and stateless'],
+      ['Cached proofs against the new digest', 'may be stale — refresh for the current set', 'may be stale — refetch a current path'],
       ['Set must be ordered', 'no', 'yes, for absence proofs'],
       ['What a proof reveals', 'nothing beyond the claim', 'two real members, for every absence proof'],
       ['Security assumption', 'Strong RSA', 'collision-resistant hash'],
@@ -448,7 +448,7 @@ export function mountCompare(root: HTMLElement): void {
       el('li', {}, 'Proof sizes: the real witnesses, serialised. One group element for membership; a group element plus the reduced Bezout coefficient for absence; ⌈log₂ n⌉ sibling hashes for a Merkle path, doubled plus both neighbouring entries for an absence proof.'),
       el('li', {}, 'Timings: each verifier run 200 times in this tab and averaged, on the live set. They will differ on your machine — that is the point of measuring rather than quoting.'),
       el('li', {}, 'The chart plots ⌈log₂ n⌉ × 32 bytes for Merkle paths, and that formula is re-checked against the real tree at n = 8, 64 and 512 every time this panel renders. If it ever disagreed, the line above would say so.'),
-      el('li', {}, 'The recommendation multiplies the per-change update payload (changed prime + new digest) by holders × changes per day. It assumes every holder must be reached; batching changes that number, and is out of scope here.'),
+      el('li', {}, 'The recommendation multiplies the per-change update payload (changed prime + new digest) by holders × changes per day. It assumes immediate delivery to every holder after each change. Batching, on-demand refresh and other constructions change maintenance costs and are out of scope here. See the research note in the living-set panel.'),
     ),
   )
 
