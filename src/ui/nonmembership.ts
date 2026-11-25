@@ -56,6 +56,7 @@ export function mountNonMembership(root: HTMLElement): void {
   })
   const out = liveRegion('Non-membership proof result')
   const controls = el('div', { class: 'controls' }, wrap, button('Build witness and verify', run))
+  input.addEventListener('input', () => clear(out))
   input.addEventListener('keydown', (e) => {
     if ((e as KeyboardEvent).key === 'Enter') run()
   })

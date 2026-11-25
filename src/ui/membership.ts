@@ -104,6 +104,7 @@ export function mountMembership(root: HTMLElement): void {
     'cert:SN-0xD4A9',
   )
   const tryOut = liveRegion('Non-member witness attempt')
+  tryInput.addEventListener('input', () => clear(tryOut))
   tryBox.append(
     el('h3', { text: 'What happens when the element is not there?' }),
     el('div', { class: 'controls' }, tryWrap, button('Try to build a witness', tryRun, 'btn-quiet')),
@@ -179,6 +180,7 @@ export function mountMembership(root: HTMLElement): void {
   root.appendChild(p)
 
   function refresh(): void {
+    clear(tryOut)
     const previous = select.value
     clear(select)
     for (const label of state.labels) {

@@ -657,7 +657,7 @@ export async function driveAllStates(page: Page, theme: string): Promise<void> {
   await scanAt('dynamics — element added, digest moved without growing');
 
   await byName('Mint both witnesses now').click();
-  await expect(live('Witness repair result')).toContainText('Witnesses minted');
+  await expect(live('Witness repair result')).toContainText('Both witnesses verified');
   await expect(held.locator('.verdict-ok')).toHaveCount(2);
   await scanAt('dynamics — both witnesses minted and fresh');
 

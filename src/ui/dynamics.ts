@@ -92,11 +92,13 @@ export function mountDynamics(root: HTMLElement): void {
   const mintBtn = button('Mint both witnesses now', () => {
     state.mintHeldWitnesses(memSelect.value || null, nonInput.value.trim() || null)
     clear(repairOut)
-    repairOut.appendChild(
-      verdict('ok', 'Witnesses minted', 'both verify against the current digest — now change the set'),
-    )
+    const verified = Number(state.membershipFresh()) + Number(state.nonMembershipFresh())
+    const title = verified === 2 ? 'Both witnesses verified' : `${verified} of 2 witnesses verified`
+    repairOut.appendChild(verdict(verified === 2 ? 'ok' : 'warn', title, `against digest #${state.version}`))
     render()
   })
+  memSelect.addEventListener('change', () => clear(repairOut))
+  nonInput.addEventListener('input', () => clear(repairOut))
   const repairBtn = button('Update both witnesses (public data only)', () => {
     clear(repairOut)
     const lines: string[] = []
@@ -280,7 +282,7 @@ export function mountDynamics(root: HTMLElement): void {
     const held = state.heldMembership
     cell.appendChild(el('h4', { text: 'Held membership witness' }))
     if (!held) {
-      cell.appendChild(verdict('warn', 'None held', 'that element is not in the set, so no witness exists'))
+      cell.appendChild(verdict('warn', 'None held', 'no membership witness was minted'))
       return cell
     }
     const fresh = verifyMembership(state.params, state.A, held.witness)
@@ -310,7 +312,7 @@ export function mountDynamics(root: HTMLElement): void {
     cell.appendChild(el('h4', { text: 'Held non-membership witness' }))
     if (!held) {
       cell.appendChild(
-        verdict('warn', 'None held', 'that element is in the set, so absence cannot be proved'),
+        verdict('warn', 'None held', 'no non-membership witness was minted'),
       )
       return cell
     }
@@ -367,7 +369,12 @@ export function mountDynamics(root: HTMLElement): void {
   )
 
   root.appendChild(p)
-  state.subscribe(render)
+  state.subscribe(() => {
+    clear(repairOut)
+    clear(delOut)
+    clear(setOut)
+    render()
+  })
   render()
   addInput.value = nextSuggestion()
   suggestionCounter = 0
